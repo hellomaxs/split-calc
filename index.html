@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Сплит-калькулятор</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Сплит">
+<meta name="theme-color" content="#ffcc00">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23ffe88a'/><stop offset='1' stop-color='%23ffcc00'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23g)'/><text x='50%25' y='54%25' font-family='-apple-system,Helvetica,Arial' font-size='78' font-weight='700' text-anchor='middle' dominant-baseline='middle' fill='%231c1c1e'>%E2%82%BD</text><text x='50%25' y='82%25' font-family='-apple-system,Helvetica,Arial' font-size='22' font-weight='600' text-anchor='middle' fill='%231c1c1e'>SPLIT</text></svg>">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #f4f5f7;
+    margin: 0;
+    padding: 24px;
+    color: #1c1c1e;
+  }
+  .card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .sub {
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    margin: 14px 0 6px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 18px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type="number"]:focus { border-color: #ffcc00; }
+  .params {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .params input { font-size: 14px; padding: 8px 10px; }
+  .result {
+    margin-top: 22px;
+    background: linear-gradient(135deg, #fff8d6, #ffe88a);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .result .big {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 4px 0;
+  }
+  .result .label {
+    font-size: 12px;
+    color: #6b5b00;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  table {
+    width: 100%;
+    margin-top: 18px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  td {
+    padding: 8px 0;
+    border-bottom: 1px solid #eef0f3;
+  }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td {
+    font-weight: 600;
+    border-bottom: none;
+    padding-top: 12px;
+  }
+  .hint {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Калькулятор продаж через Яндекс Сплит</h1>
+  <div class="sub">Считает цену продажи, чтобы после всех удержаний осталась нужная сумма</div>
+
+  <label for="net">Желаемая сумма к получению (₽)</label>
+  <input id="net" type="number" value="72200" step="100" min="0">
+
+  <label>Параметры удержаний (%)</label>
+  <div class="params">
+    <div>
+      <input id="tax" type="number" value="7" step="0.1" min="0">
+      <div class="hint" style="margin-top:4px">Налог с продажи</div>
+    </div>
+    <div>
+      <input id="split" type="number" value="5" step="0.1" min="0">
+      <div class="hint" style="margin-top:4px">Комиссия Сплита</div>
+    </div>
+    <div>
+      <input id="vat" type="number" value="22" step="0.1" min="0">
+      <div class="hint" style="margin-top:4px">НДС на комиссию</div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="label">Продавать за</div>
+    <div class="big"><span id="sale">—</span> ₽</div>
+  </div>
+
+  <table>
+    <tr><td>Цена продажи</td><td id="rSale">—</td></tr>
+    <tr><td>− Налог <span id="rTaxP"></span> от цены</td><td id="rTax">—</td></tr>
+    <tr><td>− Комиссия Сплита <span id="rSplitP"></span> от цены</td><td id="rSplit">—</td></tr>
+    <tr><td>− НДС <span id="rVatP"></span> на комиссию</td><td id="rVat">—</td></tr>
+    <tr class="total"><td>= Чистыми</td><td id="rNet">—</td></tr>
+    <tr><td>Доля удержаний</td><td id="rPct">—</td></tr>
+  </table>
+
+  <div class="hint">
+    Формула: <code>S = Net / (1 − tax − split − vat·split)</code>.
+    Налог и комиссия Сплита считаются от полной цены продажи независимо, НДС начисляется на комиссию Сплита.
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+  function recalc() {
+    const net = parseFloat($('net').value) || 0;
+    const tax = (parseFloat($('tax').value) || 0) / 100;
+    const split = (parseFloat($('split').value) || 0) / 100;
+    const vat = (parseFloat($('vat').value) || 0) / 100;
+
+    const keepRatio = 1 - tax - split - vat * split;
+    const sale = keepRatio > 0 ? net / keepRatio : 0;
+
+    const taxAmount = sale * tax;
+    const splitAmount = sale * split;
+    const vatAmount = splitAmount * vat;
+    const finalNet = sale - taxAmount - splitAmount - vatAmount;
+    const lossPct = (1 - keepRatio) * 100;
+
+    $('sale').textContent = fmt(sale);
+    $('rSale').textContent = fmt(sale) + ' ₽';
+    $('rTax').textContent = '−' + fmt(taxAmount) + ' ₽';
+    $('rSplit').textContent = '−' + fmt(splitAmount) + ' ₽';
+    $('rVat').textContent = '−' + fmt(vatAmount) + ' ₽';
+    $('rNet').textContent = fmt(finalNet) + ' ₽';
+    $('rPct').textContent = lossPct.toFixed(3) + ' %';
+    $('rTaxP').textContent = ($('tax').value || 0) + '%';
+    $('rSplitP').textContent = ($('split').value || 0) + '%';
+    $('rVatP').textContent = ($('vat').value || 0) + '%';
+  }
+
+  ['net','tax','split','vat'].forEach(id => $(id).addEventListener('input', recalc));
+  recalc();
+</script>
+</body>
+</html>
